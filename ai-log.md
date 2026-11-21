@@ -47,3 +47,37 @@ Copia este bloque para cada entrada nueva:
 - **Decisión:** aceptado sin cambios. Por qué: cubre los cinco puntos que pide el README (los comandos `python -m pytest` y `python servidor.py`, no tocar `servidor.py` ni `almacen.py`, sin dependencias nuevas, mensajes de error exactos y no cambiar un test para que pase) y además incluye mi regla de que me consulte cada cambio de código. [CONFIRMAR] Mantuve la sección del contrato con `servidor.py` porque explica cómo encajan los archivos, algo que no se ve leyendo uno solo.
 - **Cómo lo verifiqué:** leí el archivo completo con la explicación de cada sección. [CONFIRMAR] Comprobé que `python -m pytest` pasa los 8 tests de `agregar` y que `python servidor.py` abre la página.
 - **Nota sobre el orden:** hice `git init` después de crear `CLAUDE.md`, no antes como pide el README. Para que el historial respete el orden, el primer commit (`chore: proyecto base`) lleva solo los archivos originales y `CLAUDE.md` va en otro commit (`docs: CLAUDE.md revisado`).
+
+### Entrada 2
+
+- **Fecha:** 2026-11-21
+- **Paso del laboratorio:** plan (paso 2)
+- **Prompt clave (literal):**
+  > Sí, paso 2
+
+  El agente siguió el prompt del README: un plan de tests para `completar`, `eliminar` y `editar`, uno por cada regla del docstring, sin escribir código.
+- **Qué propuso el agente:** 13 tests (3 de `completar`, 3 de `eliminar`, 7 de `editar`), en el orden completar → eliminar → editar, con el ciclo RED → GREEN → commit por función y el REFACTOR de la validación del título en `editar`. Señaló un caso que el docstring no define (título vacío + id inexistente en `editar`) y propuso no testearlo.
+- **Decisión:** aceptado sin cambios. El plan pasaba las tres preguntas del README: cubre cada regla del docstring, empieza por los tests y no toca `servidor.py` ni agrega dependencias.
+- **Cómo lo verifiqué:** comparé cada test del plan con las reglas de los docstrings de `tareas.py`.
+
+### Entrada 3
+
+- **Fecha:** 2026-11-21
+- **Paso del laboratorio:** RED de `completar` (paso 3)
+- **Prompt clave (literal):**
+  > Acepto el plan
+
+  > Sí, aplícalo
+- **Qué propuso el agente:** cambiar el import a `from tareas import agregar, completar` (solo `completar`, para que cada commit lleve lo de su función) y 3 tests: marca como hecha y devuelve la tarea (comprobando que la otra no cambia), id inexistente da `ValueError("No existe la tarea 7")` sin modificar la lista, y completar una tarea ya hecha la deja hecha. Ofreció dos formas de comprobar el mensaje: `match=` como en `agregar` u otra más estricta con `^...$`.
+- **Decisión:** aceptado con `match=` igual que en `agregar`, porque el README pide el mismo estilo que esos tests.
+- **Cómo lo verifiqué:** le pedí al agente que ejecutara `python -m pytest -v`: 8 passed y 3 failed, los tres con `NotImplementedError: completar() aún no está implementada`. Ningún test nuevo pasó ni falló por otro motivo.
+
+### Entrada 4
+
+- **Fecha:** 2026-11-21
+- **Paso del laboratorio:** GREEN de `completar` (paso 4)
+- **Prompt clave (literal):**
+  > Sí, aplícala
+- **Qué propuso el agente:** un `for` que busca la tarea por id, pone `hecha = True` y la devuelve; si no la encuentra, lanza `ValueError(f"No existe la tarea {id_tarea}")`. Descartó por ahora una función auxiliar `buscar_tarea` (adelantarse antes de que haya duplicación) y `next(...)` (menos legible).
+- **Decisión:** aceptado. Asigna `True` en vez de invertir el valor, así que cumple la regla de la tarea ya hecha.
+- **Cómo lo verifiqué:** `python -m pytest -v` dio 11 passed. Con `git diff` comprobé que solo cambió el cuerpo de `completar` y ningún test. [CONFIRMAR] En el navegador, al pulsar Completar la tarea aparece tachada en verde.
