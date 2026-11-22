@@ -81,3 +81,18 @@ Copia este bloque para cada entrada nueva:
 - **Qué propuso el agente:** un `for` que busca la tarea por id, pone `hecha = True` y la devuelve; si no la encuentra, lanza `ValueError(f"No existe la tarea {id_tarea}")`. Descartó por ahora una función auxiliar `buscar_tarea` (adelantarse antes de que haya duplicación) y `next(...)` (menos legible).
 - **Decisión:** aceptado. Asigna `True` en vez de invertir el valor, así que cumple la regla de la tarea ya hecha.
 - **Cómo lo verifiqué:** `python -m pytest -v` dio 11 passed. Con `git diff` comprobé que solo cambió el cuerpo de `completar` y ningún test. [CONFIRMAR] En el navegador, al pulsar Completar la tarea aparece tachada en verde.
+
+### Entrada 5
+
+- **Fecha:** 2026-11-21
+- **Paso del laboratorio:** deshacer (paso 5)
+- **Prompt clave (literal):**
+  > Paso 5: deshacer
+
+  > Sí, aplícala
+
+  El agente usó el prompt del README («Traduce al inglés todos los mensajes de error de tareas.py») y me consultó antes de aplicarlo.
+- **Qué propuso el agente:** traducir los 5 mensajes de los `raise` de `tareas.py` (no los docstrings). Explicó que Claude Code no tiene `/undo` como OpenCode y que hay dos formas de deshacer: `git restore tareas.py` o el rewind (puntos de restauración).
+- **Decisión:** aplicado a propósito para practicar, y deshecho con `git restore tareas.py`, que ejecutó el agente a mi pedido. Elegí `git restore` porque funciona sin importar quién hizo el cambio y no había otros cambios sin commit que se pudieran perder.
+- **Cómo lo verifiqué:** `git diff --stat` mostró 5 líneas cambiadas, solo en `tareas.py`. [CONFIRMAR] Revisé el diff completo con `git diff`. Con la traducción, `python -m pytest` dio 3 failed y 8 passed: fallaron los tests de título vacío, título de 81 caracteres y `completar` con id inexistente, por «Regex pattern did not match». Después de restaurar, `git status` dijo «nothing to commit, working tree clean» y los tests volvieron a 11 passed.
+- **Nota:** los mensajes de error son parte del contrato: traducirlos rompe los tests, y la solución es deshacer el código, no cambiar los tests. Límites: ni `/undo` ni el rewind revierten lo que cambie un comando de terminal, y `git restore` solo deshace cambios sin commit (para un cambio ya commiteado haría falta `git revert`).
